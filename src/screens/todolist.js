@@ -3,6 +3,7 @@ import react, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, TextInput, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 //테스트1
+//테스트2
 // const STORAGE_KEY = "@toDos";
 export default function App() {
   const [text, setText] = useState("");
