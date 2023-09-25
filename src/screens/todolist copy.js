@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState, useRef } from "react";
-import {KeyboardAvoidingView, Platform, StyleSheet, Text, View, Modal, TextInput, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, Modal, TextInput, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STORAGE_KEY = "@toDos";
@@ -12,7 +12,6 @@ export default function App({navigation}) {
   const [selectedToDo, setSelectedToDo] = useState(null);
   const [editingText, setEditingText] = useState(""); // 수정 중인 텍스트
   const [isEditing, setIsEditing] = useState(false); // 수정 모드인지 확인
-  const editingKeyRef = useRef(null);  // 선택된 항목의 키를 저장할 변수
 
   useEffect(() => {
     loadToDos();
@@ -67,36 +66,20 @@ export default function App({navigation}) {
 
   const startEdit = (key) => {
     setEditingText(toDos[key].text);
-    editingKeyRef.current = key
-    // setSelectedToDo(key);
+    setSelectedToDo(key);
     setIsEditing(true);
-    hideMenu();
   };
-  
-  const finishEdit = async () => {
-    console.log("finishEdit 함수가 호출되었습니다.");
-  
-    if (editingText === "") {
-      console.warn("텍스트가 없습니다.");
-      return;
-    }
-    if (!editingKeyRef.current) {
-      console.warn("선택된 항목이 없습니다.");
-      return;
-    }
+
+  const finishEdit = (key) => {
     const newToDos = { ...toDos };
-    if (!newToDos[editingKeyRef.current]) {
-      console.warn("해당 항목을 찾을 수 없습니다.");
-      return;
-    }
-    newToDos[editingKeyRef.current].text = editingText;
+    newToDos[key].text = editingText;
     setToDos(newToDos);
-    await saveToDos(newToDos);
+    saveToDos(newToDos);
     setIsEditing(false);
     setEditingText("");
-    editingKeyRef.current = null;  // 수정이 완료된 후 변수를 초기화
+    hideMenu();
   };
-      
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>To Do List</Text>
@@ -113,7 +96,6 @@ export default function App({navigation}) {
             <TouchableOpacity 
               style={toDos[key].checked ? styles.checkedBox : styles.checkBox} 
               onPress={() => showMenu(key)}>
-              {toDos[key].checked && <Text style={styles.checkMark}>✔</Text>}
             </TouchableOpacity>
             <Text style={styles.toDoText}>{toDos[key].text}</Text>
           </View>
@@ -134,43 +116,28 @@ export default function App({navigation}) {
           	}} style={styles.menuItem}>
             <Text>확인</Text>
           </TouchableOpacity>
+          {isEditing ? (
+            <View style={styles.menuItem}>
+              <TextInput
+                value={editingText}
+                onChangeText={setEditingText}
+                style={{ borderBottomWidth: 1, width: "80%" }}
+              />
+              <TouchableOpacity onPress={() => finishEdit(selectedToDo)}>
+                <Text>완료</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <TouchableOpacity onPress={() => startEdit(selectedToDo)} style={styles.menuItem}>
               <Text>수정</Text>
             </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={() => deleteToDo(selectedToDo)} style={styles.menuItem}>
             <Text>삭제</Text>
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
-    <Modal
-  animationType="slide"
-  transparent={true}
-  visible={isEditing}
-  onRequestClose={() => setIsEditing(false)}
->
-  <KeyboardAvoidingView 
-    style={styles.modalOverlay} 
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-  >
-    <View style={styles.menuContainer}>
-      <TextInput
-        value={editingText}
-        onChangeText={setEditingText}
-        style={styles.input}
-      />
-      <TouchableOpacity onPress={() => finishEdit(selectedToDo)} style={styles.menuItem}>
-        <Text>저장</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => setIsEditing(false)} style={styles.menuItem}>
-        <Text>취소</Text>
-      </TouchableOpacity>
-    </View>
-  </KeyboardAvoidingView>
-</Modal>
-
-
     </View>
   );
 }
@@ -212,15 +179,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // checkBox: {
-  //   width: 25,
-  //   height: 25,
-  //   borderWidth: 2,
-  //   borderColor: "#868686",
-  //   marginBottom: -23,
-  //   marginLeft: -60,
-  //   borderRadius: 3,
-  // },
+  checkBox: {
+    width: 25,
+    height: 25,
+    borderWidth: 2,
+    borderColor: "#868686",
+    marginBottom: -23,
+    marginLeft: -60,
+    borderRadius: 3,
+  },
 
   modalOverlay: {
     flex: 1,
@@ -250,8 +217,6 @@ const styles = StyleSheet.create({
     marginBottom: -23,
     marginLeft: -60,
     borderRadius: 3,
-    justifyContent: 'center', // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
-    alignItems: 'center',     // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
   },
 
   checkedBox: {
@@ -262,12 +227,6 @@ const styles = StyleSheet.create({
     marginBottom: -23,
     marginLeft: -60,
     borderRadius: 3,
-    justifyContent: 'center', // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
-    alignItems: 'center',     // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
+    backgroundColor: '#868686', // 체크된 상태의 배경색
   },
-
-  checkMark: {
-    fontSize: 20,
-    color: "#868686"
-  }
 });
