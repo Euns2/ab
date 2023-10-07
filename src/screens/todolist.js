@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState, useRef } from "react";
 import {KeyboardAvoidingView, Platform, StyleSheet, Text, View, Modal, TextInput, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const STORAGE_KEY = "@toDos";
 
@@ -75,7 +76,6 @@ export default function App({navigation}) {
   
   const finishEdit = async () => {
     console.log("finishEdit 함수가 호출되었습니다.");
-  
     if (editingText === "") {
       console.warn("텍스트가 없습니다.");
       return;
@@ -99,7 +99,7 @@ export default function App({navigation}) {
       
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>To Do List</Text>
+      <Text style={{...styles.header, fontSize:20, paddingTop:50}}>To Do List</Text>
       <TextInput
         onSubmitEditing={addToDo}
         onChangeText={onChangeText}
@@ -127,20 +127,30 @@ export default function App({navigation}) {
         onRequestClose={hideMenu}
       >
 			<View style={styles.modalOverlay}>
+
         <View style={styles.menuContainer}>
           <TouchableOpacity onPress={() => {
             toggleCheck(selectedToDo);
             hideMenu();
-          	}} style={styles.menuItem}>
-            <Text>확인</Text>
-          </TouchableOpacity>
-            <TouchableOpacity onPress={() => startEdit(selectedToDo)} style={styles.menuItem}>
-              <Text>수정</Text>
-            </TouchableOpacity>
-          <TouchableOpacity onPress={() => deleteToDo(selectedToDo)} style={styles.menuItem}>
-            <Text>삭제</Text>
-          </TouchableOpacity>
+          }} style={styles.menuItem}>
+          <View style={styles.iconTextContainer}>
+            <Icon name="check" size={20} color="#000" />
+            <Text style={{ fontSize: 18 }}>  확인</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => startEdit(selectedToDo)} style={styles.menuItem}>
+        <View style={styles.iconTextContainer}>
+          <Icon name="edit" size={20} color="#000" />
+          <Text style={{ fontSize: 18 }}>  수정</Text>
         </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => deleteToDo(selectedToDo)} style={styles.menuItem}>
+          <View style={styles.iconTextContainer}>
+            <Icon name="trash" size={20} color="#000" />
+            <Text style={{ fontSize: 18 }}>   삭제</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
       </View>
     </Modal>
     <Modal
@@ -158,20 +168,18 @@ export default function App({navigation}) {
       <TextInput
         value={editingText}
         onChangeText={setEditingText}
-        style={styles.input}
+        style={styles.input_edit}
       />
-      <TouchableOpacity onPress={() => finishEdit(selectedToDo)} style={styles.menuItem}>
-        <Text>저장</Text>
+      <TouchableOpacity onPress={() => finishEdit(selectedToDo)} style={styles.menuItem_edit}>
+        <Text style={{ fontSize: 18 }} >저장</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => setIsEditing(false)} style={styles.menuItem}>
-        <Text>취소</Text>
+      <TouchableOpacity onPress={() => setIsEditing(false)} style={styles.menuItem_edit}>
+        <Text style={{ fontSize: 18 }}>취소</Text>
       </TouchableOpacity>
     </View>
-  </KeyboardAvoidingView>
-</Modal>
-
-
-    </View>
+    </KeyboardAvoidingView>
+    </Modal>
+  </View>
   );
 }
 
@@ -183,7 +191,7 @@ const styles = StyleSheet.create({
   },
 
   header: {
-
+    
   },
 
   input: {
@@ -192,7 +200,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 15,
     marginTop: 20,
+    fontSize: 18
+  },
+  input_edit: {
+    backgroundColor: "#F5F5F5",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    marginTop: 10,
     fontSize: 18,
+    marginHorizontal: 20 // 이 부분을 추가
   },
 
   toDo: {
@@ -212,16 +229,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // checkBox: {
-  //   width: 25,
-  //   height: 25,
-  //   borderWidth: 2,
-  //   borderColor: "#868686",
-  //   marginBottom: -23,
-  //   marginLeft: -60,
-  //   borderRadius: 3,
-  // },
-
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -234,12 +241,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
     justifyContent: 'space-evenly',
-  },
-
-  menuItem: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingBottom:15,
+    paddingTop:15
   },
 
   checkBox: {
@@ -250,8 +253,8 @@ const styles = StyleSheet.create({
     marginBottom: -23,
     marginLeft: -60,
     borderRadius: 3,
-    justifyContent: 'center', // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
-    alignItems: 'center',     // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
+    justifyContent: 'center', 
+    alignItems: 'center',     
   },
 
   checkedBox: {
@@ -262,12 +265,32 @@ const styles = StyleSheet.create({
     marginBottom: -23,
     marginLeft: -60,
     borderRadius: 3,
-    justifyContent: 'center', // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
-    alignItems: 'center',     // 텍스트 컴포넌트를 중앙에 배치하기 위해 추가
+    justifyContent: 'center', 
+    alignItems: 'center',     
   },
 
   checkMark: {
     fontSize: 20,
     color: "#868686"
+  },
+  iconTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start' // 아이콘과 텍스트를 왼쪽으로 붙임
+  },
+
+  menuItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start', // 왼쪽 정렬
+    paddingHorizontal: 40  // 좌우 간격을 조금 추가하여 아이콘과 텍스트가 너무 가장자리에 붙지 않도록 함
+  },
+  menuItem_edit: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center', // 왼쪽 정렬
+    paddingHorizontal: 40  // 좌우 간격을 조금 추가하여 아이콘과 텍스트가 너무 가장자리에 붙지 않도록 함
+    
   }
+
 });
